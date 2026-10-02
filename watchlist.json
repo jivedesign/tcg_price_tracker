@@ -1,0 +1,8 @@
+{
+  "mtg": {"top_n": 100},
+  "games": {
+    "pokemon":  {"label": "Pokémon",   "category": "Pokemon",   "cards": []},
+    "onepiece": {"label": "One Piece", "category": "One Piece", "cards": []}
+  },
+  "stocks": ["SPY", "QQQ", "AAPL", "NVDA", "TSLA", "HAS", "GLD", "IWM"]
+}
