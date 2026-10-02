@@ -324,7 +324,12 @@
     <div class="grid">
       <div class="card">
         <h2>Cards <span class="note" id="cc"></span></h2>
-        <select id="game" class="btn" aria-label="Game" style="margin-bottom:8px"></select>
+        <div class="bar" style="margin-bottom:8px"><select id="game" class="btn" aria-label="Game"></select><select
+            id="sort" class="btn" aria-label="Sort cards">
+            <option value="">Default order</option>
+            <option value="desc">Price: high to low</option>
+            <option value="asc">Price: low to high</option>
+          </select></div>
         <input type="search" id="q" placeholder="Search cards" aria-label="Search cards">
         <div class="list" id="cardList"></div>
       </div>
@@ -396,8 +401,10 @@
       }
       function color(k, isStock) { var a = Array.from(selC).concat(Array.from(selS)), i = a.indexOf(k); return PAL[(i < 0 ? 0 : i) % PAL.length] }
       function lists() {
-        var q = $("q").value.toLowerCase(), names = Object.keys(D.cards).filter(function (n) { return n.toLowerCase().indexOf(q) >= 0 }), h = "";
-        names.forEach(function (n) { var last = lastP(D.cards[n]); h += '<label><input type="checkbox" data-c="' + esc(n) + '"' + (selC.has(n) ? " checked" : "") + '><span>' + esc(n) + '</span><small>$' + last.toFixed(2) + '</small></label>' });
+        var q = $("q").value.toLowerCase(), names = Object.keys(D.cards).filter(function (n) { return n.toLowerCase().indexOf(q) >= 0 }), h = "", sv = $("sort").value, LP = {};
+        names.forEach(function (n) { LP[n] = lastP(D.cards[n]) });
+        if (sv === "desc") names.sort(function (a, b) { return LP[b] - LP[a] }); else if (sv === "asc") names.sort(function (a, b) { return LP[a] - LP[b] });
+        names.forEach(function (n) { var last = LP[n]; h += '<label><input type="checkbox" data-c="' + esc(n) + '"' + (selC.has(n) ? " checked" : "") + '><span>' + esc(n) + '</span><small>$' + last.toFixed(2) + '</small></label>' });
         $("cardList").innerHTML = h || '<p class="note" style="padding:10px">No cards match.</p>';
         $("cc").textContent = "(" + Object.keys(D.cards).length + " tracked)";
         h = ""; Object.keys(D.stocks).forEach(function (t) { var nm = (STOCKS.filter(function (x) { return x[0] === t })[0] || [0, ""])[1]; h += '<label><input type="checkbox" data-s="' + esc(t) + '"' + (selS.has(t) ? " checked" : "") + '><span>' + esc(t) + '</span><small>' + esc(nm) + '</small></label>' });
@@ -479,6 +486,7 @@
       $("cardList").addEventListener("change", function (e) { var n = e.target.getAttribute("data-c"); if (n == null) return; e.target.checked ? selC.add(n) : selC.delete(n); draw() });
       $("stockList").addEventListener("change", function (e) { var n = e.target.getAttribute("data-s"); if (n == null) return; e.target.checked ? selS.add(n) : selS.delete(n); draw() });
       $("q").addEventListener("input", lists);
+      $("sort").addEventListener("change", lists);
       $("basket").addEventListener("change", draw);
       function setMode(m) { mode = m; $("mIdx").setAttribute("aria-pressed", m === "idx"); $("mRaw").setAttribute("aria-pressed", m === "raw"); draw() }
       $("mIdx").onclick = function () { setMode("idx") }; $("mRaw").onclick = function () { setMode("raw") };
