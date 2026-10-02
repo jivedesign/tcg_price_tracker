@@ -3,7 +3,8 @@
   python collect.py daily                      # MTG (Scryfall) + other games (TCGCSV) + stocks
   python collect.py init-mtg                   # lock the top-N MTG cards by EDHREC rank
   python collect.py backfill-mtg               # one-off: ~90 days of history from MTGJSON
-  python collect.py find GAME QUERY [SET]      # look up product/group ids for watchlist.json
+  python collect.py find GAME QUERY [SET]      # look up product ids
+  python collect.py add GAME URL_OR_ID         # track a card (paste its TCGplayer URL)
 """
 import gzip, json, pathlib, sys, time, datetime as dt
 import requests
@@ -33,6 +34,7 @@ def store(game, label, rows):
     o = load(f, {"label": label, "items": {}})
     for key, meta, series in rows:
         it = o["items"].setdefault(key, {**meta, "s": {}})
+        it.update(meta)  # keep name/set/img fresh
         it["s"].update({d: p for d, p in series.items() if p is not None})
     o["asOf"] = TODAY
     save(f, o)
@@ -48,6 +50,10 @@ def init_mtg():
     save(R / "mtg_cards.json", [{"id": c["id"], "name": c["name"], "set": c["set_name"]} for c in cards])
     print(f"Locked {len(cards)} MTG printings")
 
+def img_meta(c):
+    u = c.get("image_uris") or (c.get("card_faces") or [{}])[0].get("image_uris") or {}
+    return {"img": u["small"]} if u.get("small") else {}
+
 def daily_mtg():
     if not (R / "mtg_cards.json").exists():
         init_mtg()
@@ -57,7 +63,7 @@ def daily_mtg():
                    json={"identifiers": [{"id": c["id"]} for c in cards[i:i + 75]]}).json()["data"]
         for c in res:
             p = c["prices"].get("usd") or c["prices"].get("usd_foil")
-            rows.append((c["id"], {"name": c["name"], "set": c["set_name"]}, {TODAY: float(p) if p else None}))
+            rows.append((c["id"], {"name": c["name"], "set": c["set_name"], **img_meta(c)}, {TODAY: float(p) if p else None}))
     store("mtg", "Magic: The Gathering", rows)
 
 def backfill_mtg():
@@ -85,20 +91,65 @@ def cat_id(name):
     hit = [c for c in res if c["name"].lower() == name.lower()] or [c for c in res if name.lower() in c["name"].lower()]
     return hit[0]["categoryId"]
 
+def cache_file(g):
+    p = R / "cache"; p.mkdir(exist_ok=True)
+    return p / f"{g}.json"
+
+def resolve(cat, g, pids):
+    """Map product_id -> set/group. Walks the category once for unknown ids, then caches in cache/<game>.json."""
+    cache = load(cache_file(g), {})
+    need = {str(p) for p in pids} - set(cache)
+    if need:
+        for grp in http("GET", f"{T}/{cat}/groups").json()["results"]:
+            if not need:
+                break
+            for p in http("GET", f"{T}/{cat}/{grp['groupId']}/products").json()["results"]:
+                k = str(p["productId"])
+                if k in need:
+                    cache[k] = {"group_id": grp["groupId"], "set": grp["name"], "name": p["name"], "img": p.get("imageUrl", "")}
+                    need.discard(k)
+        save(cache_file(g), cache)
+    return cache
+
 def daily_tcg():
     for g, spec in CFG["games"].items():
         cards = spec.get("cards", [])
         if not cards:
             continue
-        cat, rows = cat_id(spec["category"]), []
-        for gid in sorted({c["group_id"] for c in cards}):
+        cat = cat_id(spec["category"])
+        cache = resolve(cat, g, [c["product_id"] for c in cards])
+        by_group = {}
+        for c in cards:
+            info = cache.get(str(c["product_id"]))
+            if info:
+                by_group.setdefault(info["group_id"], []).append((c, info))
+            else:
+                print(f"{g}: product {c['product_id']} not found on TCGCSV", file=sys.stderr)
+        rows = []
+        for gid, items in by_group.items():
             prices = http("GET", f"{T}/{cat}/{gid}/prices").json()["results"]
-            for c in (x for x in cards if x["group_id"] == gid):
-                sub = c.get("sub", "Normal")
-                p = next((x["marketPrice"] for x in prices
-                          if x["productId"] == c["product_id"] and x["subTypeName"] == sub), None)
-                rows.append((str(c["product_id"]), {"name": c["name"], "set": c.get("set", ""), "sub": sub}, {TODAY: p}))
+            for c, info in items:
+                pid = c["product_id"]
+                sub = c.get("sub") or info.get("sub")
+                if not sub:  # first printing type with a price; remembered so the series stays consistent
+                    sub = next((x["subTypeName"] for x in prices if x["productId"] == pid and x["marketPrice"] is not None), None)
+                    if sub:
+                        info["sub"] = sub
+                p = next((x["marketPrice"] for x in prices if x["productId"] == pid and x["subTypeName"] == sub), None)
+                rows.append((str(pid), {"name": c.get("name") or info["name"], "set": info["set"], "sub": sub or "", **({"img": info["img"]} if info.get("img") else {})}, {TODAY: p}))
+        save(cache_file(g), cache)
         store(g, spec["label"], rows)
+
+def add(game, ref):
+    """python collect.py add pokemon https://www.tcgplayer.com/product/517045/...  (or just the number)"""
+    import re
+    m = re.search(r"/product/(\d+)", ref) or re.fullmatch(r"(\d+)", ref)
+    pid = int(m.group(1))
+    cards = CFG["games"][game]["cards"]
+    if all(c["product_id"] != pid for c in cards):
+        cards.append({"product_id": pid})
+        (R / "watchlist.json").write_text(json.dumps(CFG, indent=2, ensure_ascii=False) + "\n")
+    print(f"{game}: tracking product {pid}")
 
 def find(game, query, group=""):
     cat = cat_id(CFG["games"][game]["category"])
@@ -107,8 +158,7 @@ def find(game, query, group=""):
             continue
         for p in http("GET", f"{T}/{cat}/{grp['groupId']}/products").json()["results"]:
             if query.lower() in p["name"].lower():
-                print(json.dumps({"name": p["name"], "set": grp["name"], "group_id": grp["groupId"],
-                                  "product_id": p["productId"], "sub": "Normal"}))
+                print(json.dumps({"product_id": p["productId"], "note": f"{p['name']} | {grp['name']}"}))
 
 # ---- Stocks: Yahoo's unofficial chart endpoint (may break; failures are non-fatal per ticker)
 def stocks():
@@ -137,4 +187,5 @@ def daily():
 
 if __name__ == "__main__":
     a = sys.argv[1:] or ["daily"]
-    {"daily": daily, "init-mtg": init_mtg, "backfill-mtg": backfill_mtg}.get(a[0], lambda: find(*a[1:]))()
+    {"daily": daily, "init-mtg": init_mtg, "backfill-mtg": backfill_mtg,
+     "add": lambda: add(*a[1:])}.get(a[0], lambda: find(*a[1:]))()

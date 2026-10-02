@@ -1,209 +1,521 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cards vs. Markets</title>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<style>
-:root{--bg:#eef0f3;--panel:#fff;--ink:#151a24;--mute:#5f6b7c;--line:#d3d9e2;--acc:#3b4cca;--onacc:#fff;--warn:#fff1d6;--warnink:#6b4700;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f131b;--panel:#171d29;--ink:#e8ecf3;--mute:#93a0b4;--line:#2b3547;--acc:#8b98ff;--onacc:#0b1030;--warn:#3a2c0a;--warnink:#f3d18a}}
-:root[data-theme="dark"]{--bg:#0f131b;--panel:#171d29;--ink:#e8ecf3;--mute:#93a0b4;--line:#2b3547;--acc:#8b98ff;--onacc:#0b1030;--warn:#3a2c0a;--warnink:#f3d18a}
-*{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.45 "Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:1100px;margin:0 auto;padding:22px 16px 48px}
-h1{font-size:clamp(28px,5vw,44px);line-height:1.05;margin:0 0 6px;font-weight:800;letter-spacing:-.02em}
-h2{font-size:16px;margin:0 0 8px}
-.sub{color:var(--mute);margin:0 0 16px}
-.banner{background:var(--warn);color:var(--warnink);border-radius:6px;padding:10px 14px;margin-bottom:14px;font-weight:600}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
-.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
-.seg button,.btn{font:inherit;font-weight:600;padding:6px 12px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
-.seg{display:flex}.seg button{border-radius:0;margin-left:-1px}.seg button:first-child{border-radius:6px 0 0 6px;margin-left:0}.seg button:last-child{border-radius:0 6px 6px 0}
-.seg button[aria-pressed=true]{background:var(--acc);color:var(--onacc);border-color:var(--acc)}
-.btn{border-radius:6px}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-.chartbox{position:relative;height:min(58vh,440px)}
-.grid{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-top:14px}
-@media(max-width:760px){.grid{grid-template-columns:1fr}}
-input[type=search]{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);margin-bottom:8px}
-.list{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:6px}
-.list label{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);cursor:pointer}
-.list label:last-child{border-bottom:0}
-.list small{margin-left:auto;color:var(--mute)}
-.sw{width:10px;height:10px;border-radius:50%;flex:none}
-table{width:100%;border-collapse:collapse;font-size:14px}
-td,th{padding:5px 6px;text-align:left;border-bottom:1px solid var(--line)}
-th{color:var(--mute);font-weight:600}
-.pos{color:#1a8f4c}.neg{color:#c23b3b}
-details{margin-top:14px}summary{cursor:pointer;font-weight:600}
-code{background:var(--bg);padding:1px 5px;border-radius:4px}
-.imp{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-.note{color:var(--mute);font-size:13px}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cards vs. Markets</title>
+  <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #eef0f3;
+      --panel: #fff;
+      --ink: #151a24;
+      --mute: #5f6b7c;
+      --line: #d3d9e2;
+      --acc: #3b4cca;
+      --onacc: #fff;
+      --warn: #fff1d6;
+      --warnink: #6b4700;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px)
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0f131b;
+        --panel: #171d29;
+        --ink: #e8ecf3;
+        --mute: #93a0b4;
+        --line: #2b3547;
+        --acc: #8b98ff;
+        --onacc: #0b1030;
+        --warn: #3a2c0a;
+        --warnink: #f3d18a
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #0f131b;
+      --panel: #171d29;
+      --ink: #e8ecf3;
+      --mute: #93a0b4;
+      --line: #2b3547;
+      --acc: #8b98ff;
+      --onacc: #0b1030;
+      --warn: #3a2c0a;
+      --warnink: #f3d18a
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-padding-top: env(safe-area-inset-top, 0px)
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 400 15px/1.45 "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 22px 16px 48px
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.05;
+      margin: 0 0 6px;
+      font-weight: 800;
+      letter-spacing: -.02em
+    }
+
+    h2 {
+      font-size: 16px;
+      margin: 0 0 8px
+    }
+
+    .sub {
+      color: var(--mute);
+      margin: 0 0 16px
+    }
+
+    .banner {
+      background: var(--warn);
+      color: var(--warnink);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      font-weight: 600
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px
+    }
+
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px
+    }
+
+    .seg button,
+    .btn {
+      font: inherit;
+      font-weight: 600;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer
+    }
+
+    .seg {
+      display: flex;
+      flex-wrap: wrap
+    }
+
+    .seg button {
+      border-radius: 0;
+      margin-left: -1px
+    }
+
+    .seg button:first-child {
+      border-radius: 6px 0 0 6px;
+      margin-left: 0
+    }
+
+    .seg button:last-child {
+      border-radius: 0 6px 6px 0
+    }
+
+    .seg button[aria-pressed=true] {
+      background: var(--acc);
+      color: var(--onacc);
+      border-color: var(--acc)
+    }
+
+    .btn {
+      border-radius: 6px
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid var(--acc);
+      outline-offset: 2px
+    }
+
+    .chartbox {
+      position: relative;
+      height: min(58vh, 440px)
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 14px;
+      margin-top: 14px
+    }
+
+    @media(max-width:760px) {
+      .grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    input[type=search] {
+      width: 100%;
+      font: inherit;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--ink);
+      margin-bottom: 8px
+    }
+
+    .list {
+      max-height: 240px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px
+    }
+
+    .list label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer
+    }
+
+    .list label:last-child {
+      border-bottom: 0
+    }
+
+    .list small {
+      margin-left: auto;
+      color: var(--mute)
+    }
+
+    .sw {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex: none
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px
+    }
+
+    td,
+    th {
+      padding: 5px 6px;
+      text-align: left;
+      border-bottom: 1px solid var(--line)
+    }
+
+    th {
+      color: var(--mute);
+      font-weight: 600
+    }
+
+    .pos {
+      color: #1a8f4c
+    }
+
+    .neg {
+      color: #c23b3b
+    }
+
+    details {
+      margin-top: 14px
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600
+    }
+
+    code {
+      background: var(--bg);
+      padding: 1px 5px;
+      border-radius: 4px
+    }
+
+    .imp {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 8px
+    }
+
+    .note {
+      color: var(--mute);
+      font-size: 13px
+    }
+
+    #pop {
+      position: fixed;
+      z-index: 50;
+      pointer-events: none;
+      width: 170px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 4px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .35)
+    }
+
+    #pop img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 5px
+    }
+  </style>
 </head>
+
 <body>
-<main>
-<h1>Cards vs. Markets</h1>
-<p class="sub">Pick cards and stocks, overlay them, and see whether card prices move with the market.</p>
-<div class="banner" id="banner"></div>
+  <main>
+    <h1>Cards vs. Markets</h1>
+    <p class="sub">Pick cards and stocks, overlay them, and see whether card prices move with the market.</p>
+    <div class="banner" id="banner"></div>
 
-<div class="card">
-  <div class="bar">
-    <div class="seg" role="group" aria-label="Chart mode">
-      <button id="mIdx" aria-pressed="true">Indexed to 100</button>
-      <button id="mRaw" aria-pressed="false">Actual prices</button>
+    <div class="card">
+      <div class="bar">
+        <div class="seg" role="group" aria-label="Chart mode">
+          <button id="mIdx" aria-pressed="true">Indexed to 100</button>
+          <button id="mRaw" aria-pressed="false">Actual prices</button>
+        </div>
+        <div class="seg" role="group" aria-label="Range">
+          <button data-r="7" aria-pressed="false">1W</button>
+          <button data-r="14" aria-pressed="false">2W</button>
+          <button data-r="30" aria-pressed="false">1M</button>
+          <button data-r="90" aria-pressed="false">3M</button>
+          <button data-r="180" aria-pressed="false">6M</button>
+          <button data-r="365" aria-pressed="false">1Y</button>
+          <button data-r="0" aria-pressed="true">All</button>
+        </div>
+        <label><input type="checkbox" id="basket"> Combine selected cards into one basket</label>
+      </div>
+      <div class="chartbox"><canvas id="ch" role="img" aria-label="Price chart"></canvas></div>
     </div>
-    <div class="seg" role="group" aria-label="Range">
-      <button data-r="12" aria-pressed="false">1Y</button>
-      <button data-r="36" aria-pressed="false">3Y</button>
-      <button data-r="0" aria-pressed="true">All</button>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Cards <span class="note" id="cc"></span></h2>
+        <select id="game" class="btn" aria-label="Game" style="margin-bottom:8px"></select>
+        <input type="search" id="q" placeholder="Search cards" aria-label="Search cards">
+        <div class="list" id="cardList"></div>
+      </div>
+      <div class="card">
+        <h2>Stocks and funds</h2>
+        <div class="list" id="stockList"></div>
+      </div>
     </div>
-    <label><input type="checkbox" id="basket"> Combine selected cards into one basket</label>
-  </div>
-  <div class="chartbox"><canvas id="ch" role="img" aria-label="Price chart"></canvas></div>
-</div>
 
-<div class="grid">
-  <div class="card">
-    <h2>Cards <span class="note" id="cc"></span></h2>
-    <select id="game" class="btn" aria-label="Game" style="margin-bottom:8px"></select>
-    <input type="search" id="q" placeholder="Search cards" aria-label="Search cards">
-    <div class="list" id="cardList"></div>
-  </div>
-  <div class="card">
-    <h2>Stocks and funds</h2>
-    <div class="list" id="stockList"></div>
-  </div>
-</div>
+    <div class="card" style="margin-top:14px">
+      <h2>How they compare</h2>
+      <div id="stats"></div>
+      <p class="note">Correlation uses period-to-period changes over the selected range, against the first selected card
+        (or the basket). Near +1 means they move together, near 0 means unrelated, and negative means they tend to move
+        opposite. Correlation is not causation.</p>
+    </div>
 
-<div class="card" style="margin-top:14px">
-  <h2>How they compare</h2>
-  <div id="stats"></div>
-  <p class="note">Correlation uses period-to-period changes over the selected range, against the first selected card (or the basket). Near +1 means they move together, near 0 means unrelated, and negative means they tend to move opposite. Correlation is not causation.</p>
-</div>
+    <details class="card">
+      <summary>Import your own data (CSV)</summary>
+      <p class="note">Long format with a header row: <code>date,name,price</code> (dates as YYYY-MM-DD or YYYY-MM). Card
+        files: one row per card per date. Stock files: use the ticker as the name.</p>
+      <div class="imp">
+        <label class="btn">Card prices <input type="file" id="fC" accept=".csv,text/csv" hidden></label>
+        <label class="btn">Stock prices <input type="file" id="fS" accept=".csv,text/csv" hidden></label>
+        <button class="btn" id="reset">Back to demo data</button>
+      </div>
+      <p class="note">Where to get real data: Scryfall's bulk data has current prices, so a daily snapshot builds your
+        history. Card price history is also available from sources like MTGGoldfish and TCGplayer, subject to their
+        terms. Stock history can be exported as CSV from most brokers and finance sites.</p>
+    </details>
+  </main>
 
-<details class="card">
-  <summary>Import your own data (CSV)</summary>
-  <p class="note">Long format with a header row: <code>date,name,price</code> (dates as YYYY-MM-DD or YYYY-MM). Card files: one row per card per date. Stock files: use the ticker as the name.</p>
-  <div class="imp">
-    <label class="btn">Card prices <input type="file" id="fC" accept=".csv,text/csv" hidden></label>
-    <label class="btn">Stock prices <input type="file" id="fS" accept=".csv,text/csv" hidden></label>
-    <button class="btn" id="reset">Back to demo data</button>
-  </div>
-  <p class="note">Where to get real data: Scryfall's bulk data has current prices, so a daily snapshot builds your history. Card price history is also available from sources like MTGGoldfish and TCGplayer, subject to their terms. Stock history can be exported as CSV from most brokers and finance sites.</p>
-</details>
-</main>
+  <div id="pop" hidden><img alt=""></div>
+  <script>
+    (function () {
+      var $ = function (i) { return document.getElementById(i) };
+      var PAL = ["#3b4cca", "#e0662a", "#1c9d6b", "#b83280", "#c9a227", "#2b8fd6", "#7a4fd1", "#c23b3b", "#4b9aa0", "#8a6d3b", "#5e8c2a", "#d1478f"];
+      var CARDS = "Sol Ring|Mana Crypt|The One Ring|Ragavan, Nimble Pilferer|Force of Will|Mana Drain|Jeweled Lotus|Cyclonic Rift|Rhystic Study|Smothering Tithe|Demonic Tutor|Swords to Plowshares|Counterspell|Command Tower|Arcane Signet|Lightning Greaves|Swiftfoot Boots|Cultivate|Kodama's Reach|Farseek|Rampant Growth|Birds of Paradise|Llanowar Elves|Dockside Extortionist|Underworld Breach|Fierce Guardianship|Deflecting Swat|Pact of Negation|Opposition Agent|Mystical Tutor|Vampiric Tutor|Enlightened Tutor|Worldly Tutor|Imperial Seal|Grim Monolith|Mana Vault|Chrome Mox|Mox Diamond|Lotus Petal|Ancient Tomb|Gaea's Cradle|Underground Sea|Volcanic Island|Tropical Island|Tundra|Bayou|Scrubland|Badlands|Savannah|Taiga|Plateau|Bitterblossom|Dark Ritual|Toxic Deluge|Damnation|Wrath of God|Blasphemous Act|Vandalblast|Craterhoof Behemoth|Doubling Season|Heliod, Sun-Crowned|Thassa's Oracle|Tainted Pact|Demonic Consultation|Ad Nauseam|Necropotence|Sheoldred, the Apocalypse|Sheoldred, Whispering One|Atraxa, Praetors' Voice|Ulamog, the Ceaseless Hunger|Emrakul, the Aeons Torn|Griselbrand|Grave Titan|Elesh Norn, Grand Cenobite|Consecrated Sphinx|Jin-Gitaxias, Core Augur|Yawgmoth, Thran Physician|Urza, Lord High Artificer|Kinnan, Bonder Prodigy|Tergrid's Shadow|Bolas's Citadel|Reanimate|Entomb|Survival of the Fittest|Oko, Thief of Crowns|Wrenn and Six|Fable of the Mirror-Breaker|Lion's Eye Diamond|Brainstorm|Ponder|Path to Exile|Lightning Bolt|Chain Lightning|Snapcaster Mage|Tarmogoyf|Noble Hierarch|Elvish Mystic|Esper Sentinel|Sword of Fire and Ice|Skullclamp".split("|");
+      var STOCKS = [["SPY", "S&P 500 fund"], ["QQQ", "Nasdaq 100 fund"], ["AAPL", "Apple"], ["NVDA", "Nvidia"], ["TSLA", "Tesla"], ["HAS", "Hasbro"], ["GLD", "Gold fund"], ["IWM", "Small caps fund"]];
+      var D, demoC = true, demoS = true, selC = new Set(), selS = new Set(), mode = "idx", range = 0, chart;
 
-<script>
-(function(){
-var $=function(i){return document.getElementById(i)};
-var PAL=["#3b4cca","#e0662a","#1c9d6b","#b83280","#c9a227","#2b8fd6","#7a4fd1","#c23b3b","#4b9aa0","#8a6d3b","#5e8c2a","#d1478f"];
-var CARDS="Sol Ring|Mana Crypt|The One Ring|Ragavan, Nimble Pilferer|Force of Will|Mana Drain|Jeweled Lotus|Cyclonic Rift|Rhystic Study|Smothering Tithe|Demonic Tutor|Swords to Plowshares|Counterspell|Command Tower|Arcane Signet|Lightning Greaves|Swiftfoot Boots|Cultivate|Kodama's Reach|Farseek|Rampant Growth|Birds of Paradise|Llanowar Elves|Dockside Extortionist|Underworld Breach|Fierce Guardianship|Deflecting Swat|Pact of Negation|Opposition Agent|Mystical Tutor|Vampiric Tutor|Enlightened Tutor|Worldly Tutor|Imperial Seal|Grim Monolith|Mana Vault|Chrome Mox|Mox Diamond|Lotus Petal|Ancient Tomb|Gaea's Cradle|Underground Sea|Volcanic Island|Tropical Island|Tundra|Bayou|Scrubland|Badlands|Savannah|Taiga|Plateau|Bitterblossom|Dark Ritual|Toxic Deluge|Damnation|Wrath of God|Blasphemous Act|Vandalblast|Craterhoof Behemoth|Doubling Season|Heliod, Sun-Crowned|Thassa's Oracle|Tainted Pact|Demonic Consultation|Ad Nauseam|Necropotence|Sheoldred, the Apocalypse|Sheoldred, Whispering One|Atraxa, Praetors' Voice|Ulamog, the Ceaseless Hunger|Emrakul, the Aeons Torn|Griselbrand|Grave Titan|Elesh Norn, Grand Cenobite|Consecrated Sphinx|Jin-Gitaxias, Core Augur|Yawgmoth, Thran Physician|Urza, Lord High Artificer|Kinnan, Bonder Prodigy|Tergrid's Shadow|Bolas's Citadel|Reanimate|Entomb|Survival of the Fittest|Oko, Thief of Crowns|Wrenn and Six|Fable of the Mirror-Breaker|Lion's Eye Diamond|Brainstorm|Ponder|Path to Exile|Lightning Bolt|Chain Lightning|Snapcaster Mage|Tarmogoyf|Noble Hierarch|Elvish Mystic|Esper Sentinel|Sword of Fire and Ice|Skullclamp".split("|");
-var STOCKS=[["SPY","S&P 500 fund"],["QQQ","Nasdaq 100 fund"],["AAPL","Apple"],["NVDA","Nvidia"],["TSLA","Tesla"],["HAS","Hasbro"],["GLD","Gold fund"],["IWM","Small caps fund"]];
-var D,demoC=true,demoS=true,selC=new Set(),selS=new Set(),mode="idx",range=0,chart;
+      function rng(s) { return function () { s |= 0; s = s + 0x6D2B79F5 | 0; var t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
+      function hs(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) } return h >>> 0 }
+      function gauss(r) { return Math.sqrt(-2 * Math.log(r() + 1e-9)) * Math.cos(2 * Math.PI * r()) }
+      function months() { var a = [], y = 2021, m = 10; while (y < 2026 || m <= 9) { a.push(y + "-" + (m < 10 ? "0" : "") + m); m++; if (m > 12) { m = 1; y++ } } return a }
+      function demo() {
+        var ds = months(), mk = rng(7), mkt = ds.map(function () { return gauss(mk) * 0.04 }), c = {}, s = {};
+        function walk(name, base, vol, beta, drift) { var r = rng(hs(name)), p = base, o = {}; ds.forEach(function (d, i) { p *= Math.exp(drift + beta * mkt[i] + vol * gauss(r)); o[d] = Math.round(p * 100) / 100 }); return o }
+        CARDS.forEach(function (n) { var r = rng(hs(n) + 1); c[n] = walk(n, Math.exp(Math.log(1) + r() * Math.log(300)), 0.07, 0.4 + r() * 0.8, (r() - 0.45) * 0.006) });
+        STOCKS.forEach(function (t) { var r = rng(hs(t[0]) + 9); s[t[0]] = walk(t[0], 20 + r() * 300, 0.03, 0.6 + r() * 1.6, 0.006) });
+        return { cards: c, stocks: s }
+      }
+      function dates() { var u = {};[D.cards, D.stocks].forEach(function (g) { for (var k in g) for (var d in g[k]) u[d] = 1 }); return Object.keys(u).sort() }
+      function parse(t) {
+        var out = {}, L = t.split(/\r?\n/);
+        for (var i = 0; i < L.length; i++) {
+          var p = L[i].split(","); if (p.length < 3) continue;
+          var pr = parseFloat(p[p.length - 1]); if (isNaN(pr)) continue;
+          var d = p[0].trim().slice(0, 7), n = p.slice(1, p.length - 1).join(",").replace(/^"|"$/g, "").trim();
+          (out[n] = out[n] || {})[d] = pr
+        }
+        return out
+      }
+      function banner() {
+        var b = $("banner");
+        if (demoC || demoS) { b.textContent = "Demo data: " + (demoC && demoS ? "card and stock prices are" : demoC ? "card prices are" : "stock prices are") + " randomly generated for illustration, not real. Import a CSV below to use real prices." }
+        else { b.textContent = "Showing collected data." }
+        b.style.display = "block"
+      }
+      function color(k, isStock) { var a = Array.from(selC).concat(Array.from(selS)), i = a.indexOf(k); return PAL[(i < 0 ? 0 : i) % PAL.length] }
+      function lists() {
+        var q = $("q").value.toLowerCase(), names = Object.keys(D.cards).filter(function (n) { return n.toLowerCase().indexOf(q) >= 0 }), h = "";
+        names.forEach(function (n) { var last = lastP(D.cards[n]); h += '<label><input type="checkbox" data-c="' + esc(n) + '"' + (selC.has(n) ? " checked" : "") + '><span>' + esc(n) + '</span><small>$' + last.toFixed(2) + '</small></label>' });
+        $("cardList").innerHTML = h || '<p class="note" style="padding:10px">No cards match.</p>';
+        $("cc").textContent = "(" + Object.keys(D.cards).length + " tracked)";
+        h = ""; Object.keys(D.stocks).forEach(function (t) { var nm = (STOCKS.filter(function (x) { return x[0] === t })[0] || [0, ""])[1]; h += '<label><input type="checkbox" data-s="' + esc(t) + '"' + (selS.has(t) ? " checked" : "") + '><span>' + esc(t) + '</span><small>' + esc(nm) + '</small></label>' });
+        $("stockList").innerHTML = h
+      }
+      function esc(s) { return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;") }
+      function lastP(o) { var k = Object.keys(o).sort(); return o[k[k.length - 1]] }
+      function series(all) {
+        var labs = all; if (range && all.length) { var ld = all[all.length - 1], cd = new Date((ld.length < 10 ? ld + "-01" : ld) + "T00:00:00Z"); cd.setUTCDate(cd.getUTCDate() - range); var cut = cd.toISOString().slice(0, 10); labs = all.filter(function (d) { return (d.length < 10 ? d + "-01" : d) >= cut }) }
+        var list = [];
+        function vals(o) { return labs.map(function (d) { return d in o ? o[d] : null }) }
+        var cardVals = Array.from(selC).filter(function (n) { return D.cards[n] }).map(function (n) { return { k: n, v: vals(D.cards[n]), st: false } });
+        var stockVals = Array.from(selS).filter(function (t) { return D.stocks[t] }).map(function (t) { return { k: t, v: vals(D.stocks[t]), st: true } });
+        function idx(v) { var b = null; for (var i = 0; i < v.length; i++)if (v[i] != null) { b = v[i]; break } return v.map(function (x) { return x == null || !b ? null : x / b * 100 }) }
+        if ($("basket").checked && cardVals.length > 1) {
+          var ix = cardVals.map(function (s) { return idx(s.v) }), avg = labs.map(function (_, i) { var t = 0, n = 0; ix.forEach(function (a) { if (a[i] != null) { t += a[i]; n++ } }); return n ? t / n : null });
+          cardVals = [{ k: "Basket (" + cardVals.length + " cards)", v: avg, st: false, basket: true }]
+        }
+        return { labs: labs, cards: cardVals, stocks: stockVals, idx: idx }
+      }
+      function corr(a, b) {
+        var ra = [], rb = []; for (var i = 1; i < a.length; i++) { if (a[i] && a[i - 1] && b[i] && b[i - 1]) { ra.push(a[i] / a[i - 1] - 1); rb.push(b[i] / b[i - 1] - 1) } }
+        var n = ra.length; if (n < 6) return null;
+        var ma = ra.reduce(function (x, y) { return x + y }, 0) / n, mb = rb.reduce(function (x, y) { return x + y }, 0) / n, sab = 0, sa = 0, sb = 0;
+        for (i = 0; i < n; i++) { sab += (ra[i] - ma) * (rb[i] - mb); sa += Math.pow(ra[i] - ma, 2); sb += Math.pow(rb[i] - mb, 2) }
+        return sab / Math.sqrt(sa * sb)
+      }
+      function draw() {
+        var all = dates(), S = series(all), isIdx = mode === "idx", ds = [];
+        S.cards.forEach(function (s) { ds.push({ img: IMG[s.k] || "", label: s.k, data: isIdx && !s.basket ? S.idx(s.v) : s.v, borderColor: color(s.k), backgroundColor: color(s.k), yAxisID: "y", tension: .2, pointRadius: 0, borderWidth: 2, spanGaps: true }) });
+        S.stocks.forEach(function (s) { ds.push({ label: s.k, data: isIdx ? S.idx(s.v) : s.v, borderColor: color(s.k), backgroundColor: color(s.k), borderDash: [6, 4], yAxisID: isIdx ? "y" : "y1", tension: .2, pointRadius: 0, borderWidth: 2, spanGaps: true }) });
+        var tc = getComputedStyle(document.body).color, gc = getComputedStyle(document.documentElement).getPropertyValue("--line");
+        var sc = { x: { ticks: { color: tc, maxTicksLimit: 8 }, grid: { color: gc } }, y: { position: "left", title: { display: true, text: isIdx ? "Indexed (start = 100)" : "Card price (USD)", color: tc }, ticks: { color: tc }, grid: { color: gc } } };
+        if (!isIdx) sc.y1 = { position: "right", title: { display: true, text: "Stock price (USD)", color: tc }, ticks: { color: tc }, grid: { drawOnChartArea: false } };
+        if (chart) chart.destroy();
+        chart = new Chart($("ch"), { type: "line", data: { labels: S.labs, datasets: ds }, options: { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: "index", intersect: false }, onHover: function (e, els, ch) { chartHover(e, ch) }, plugins: { legend: { labels: { color: tc }, onHover: function (e, it, lg) { showImg(lg.chart.data.datasets[it.datasetIndex].img, e.native) }, onLeave: hideImg } }, scales: sc } });
+        var h = "";
+        if (!S.cards.length || !S.stocks.length) { h = '<p class="note">Select at least one card and one stock to compare.</p>' }
+        else {
+          var p = S.cards[0]; h = "<table><tr><th>Stock</th><th>Change over range</th><th>" + esc(p.k.length > 26 ? p.k.slice(0, 24) + "…" : p.k) + " change</th><th>Correlation</th></tr>";
+          var pc = chg(p.v);
+          S.stocks.forEach(function (s) { var c = corr(p.v, s.v), sc2 = chg(s.v); h += "<tr><td>" + esc(s.k) + "</td><td>" + fmt(sc2) + "</td><td>" + fmt(pc) + "</td><td>" + (c == null ? "n/a" : c.toFixed(2)) + "</td></tr>" });
+          h += "</table>"
+        }
+        $("stats").innerHTML = h
+      }
+      function chg(v) { var a = null, b = null; for (var i = 0; i < v.length; i++)if (v[i] != null) { if (a == null) a = v[i]; b = v[i] } return a ? b / a - 1 : null }
+      function fmt(x) { return x == null ? "n/a" : '<span class="' + (x >= 0 ? "pos" : "neg") + '">' + (x >= 0 ? "+" : "") + (x * 100).toFixed(1) + "%</span>" }
+      var pop = $("pop"), pimg = pop.firstElementChild, BAD = {}, canHover = window.matchMedia("(hover:hover)").matches;
+      function place(x, y) {
+        var w = pop.offsetWidth || 170, h = pop.offsetHeight || 240, nx = x + 18, ny = y + 18;
+        if (nx + w > innerWidth - 8) nx = x - w - 18; if (ny + h > innerHeight - 8) ny = innerHeight - h - 8;
+        pop.style.left = Math.max(8, nx) + "px"; pop.style.top = Math.max(8, ny) + "px"
+      }
+      function hideImg() { pop.hidden = true }
+      function showImg(src, ev) {
+        if (!canHover || !src || BAD[src]) { hideImg(); return }
+        if (pimg.getAttribute("src") !== src) pimg.src = src;
+        pop.hidden = false; if (ev) place(ev.clientX, ev.clientY)
+      }
+      pimg.onerror = function () { BAD[pimg.getAttribute("src")] = 1; hideImg() };
+      function chartHover(e, ch) {
+        if (!e.native || e.type === "mouseout") { hideImg(); return }
+        var el = ch.getElementsAtEventForMode(e, "nearest", { intersect: false, axis: "xy" }, true)[0];
+        if (!el) { hideImg(); return }
+        var dx = el.element.x - e.x, dy = el.element.y - e.y;
+        if (dx * dx + dy * dy > 2500) { hideImg(); return }
+        showImg(ch.data.datasets[el.datasetIndex].img, e.native)
+      }
+      var cl = $("cardList");
+      cl.addEventListener("mousemove", function (e) {
+        var lb = e.target.closest("label"); if (!lb) { hideImg(); return }
+        showImg(IMG[lb.querySelector("input").getAttribute("data-c")], e)
+      });
+      cl.addEventListener("mouseleave", hideImg); cl.addEventListener("scroll", hideImg);
+      $("ch").addEventListener("mouseleave", hideImg);
+      function all_() { lists(); draw(); banner() }
 
-function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function hs(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
-function gauss(r){return Math.sqrt(-2*Math.log(r()+1e-9))*Math.cos(2*Math.PI*r())}
-function months(){var a=[],y=2021,m=10;while(y<2026||m<=9){a.push(y+"-"+(m<10?"0":"")+m);m++;if(m>12){m=1;y++}}return a}
-function demo(){
-  var ds=months(),mk=rng(7),mkt=ds.map(function(){return gauss(mk)*0.04}),c={},s={};
-  function walk(name,base,vol,beta,drift){var r=rng(hs(name)),p=base,o={};ds.forEach(function(d,i){p*=Math.exp(drift+beta*mkt[i]+vol*gauss(r));o[d]=Math.round(p*100)/100});return o}
-  CARDS.forEach(function(n){var r=rng(hs(n)+1);c[n]=walk(n,Math.exp(Math.log(1)+r()*Math.log(300)),0.07,0.4+r()*0.8,(r()-0.45)*0.006)});
-  STOCKS.forEach(function(t){var r=rng(hs(t[0])+9);s[t[0]]=walk(t[0],20+r()*300,0.03,0.6+r()*1.6,0.006)});
-  return{cards:c,stocks:s}
-}
-function dates(){var u={};[D.cards,D.stocks].forEach(function(g){for(var k in g)for(var d in g[k])u[d]=1});return Object.keys(u).sort()}
-function parse(t){
-  var out={},L=t.split(/\r?\n/);
-  for(var i=0;i<L.length;i++){var p=L[i].split(",");if(p.length<3)continue;
-    var pr=parseFloat(p[p.length-1]);if(isNaN(pr))continue;
-    var d=p[0].trim().slice(0,7),n=p.slice(1,p.length-1).join(",").replace(/^"|"$/g,"").trim();
-    (out[n]=out[n]||{})[d]=pr}
-  return out}
-function banner(){
-  var b=$("banner");
-  if(demoC||demoS){b.textContent="Demo data: "+(demoC&&demoS?"card and stock prices are":demoC?"card prices are":"stock prices are")+" randomly generated for illustration, not real. Import a CSV below to use real prices."}
-  else{b.textContent="Showing collected data."}
-  b.style.display="block"}
-function color(k,isStock){var a=Array.from(selC).concat(Array.from(selS)),i=a.indexOf(k);return PAL[(i<0?0:i)%PAL.length]}
-function lists(){
-  var q=$("q").value.toLowerCase(),names=Object.keys(D.cards).filter(function(n){return n.toLowerCase().indexOf(q)>=0}),h="";
-  names.forEach(function(n){var last=lastP(D.cards[n]);h+='<label><input type="checkbox" data-c="'+esc(n)+'"'+(selC.has(n)?" checked":"")+'><span>'+esc(n)+'</span><small>$'+last.toFixed(2)+'</small></label>'});
-  $("cardList").innerHTML=h||'<p class="note" style="padding:10px">No cards match.</p>';
-  $("cc").textContent="("+Object.keys(D.cards).length+" tracked)";
-  h="";Object.keys(D.stocks).forEach(function(t){var nm=(STOCKS.filter(function(x){return x[0]===t})[0]||[0,""])[1];h+='<label><input type="checkbox" data-s="'+esc(t)+'"'+(selS.has(t)?" checked":"")+'><span>'+esc(t)+'</span><small>'+esc(nm)+'</small></label>'});
-  $("stockList").innerHTML=h}
-function esc(s){return s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
-function lastP(o){var k=Object.keys(o).sort();return o[k[k.length-1]]}
-function series(all){
-  var labs=all;if(range){var cd=new Date();cd.setMonth(cd.getMonth()-range);var cs=cd.toISOString().slice(0,7);labs=all.filter(function(d){return d.slice(0,7)>=cs})}
-  var list=[];
-  function vals(o){return labs.map(function(d){return d in o?o[d]:null})}
-  var cardVals=Array.from(selC).filter(function(n){return D.cards[n]}).map(function(n){return{k:n,v:vals(D.cards[n]),st:false}});
-  var stockVals=Array.from(selS).filter(function(t){return D.stocks[t]}).map(function(t){return{k:t,v:vals(D.stocks[t]),st:true}});
-  function idx(v){var b=null;for(var i=0;i<v.length;i++)if(v[i]!=null){b=v[i];break}return v.map(function(x){return x==null||!b?null:x/b*100})}
-  if($("basket").checked&&cardVals.length>1){
-    var ix=cardVals.map(function(s){return idx(s.v)}),avg=labs.map(function(_,i){var t=0,n=0;ix.forEach(function(a){if(a[i]!=null){t+=a[i];n++}});return n?t/n:null});
-    cardVals=[{k:"Basket ("+cardVals.length+" cards)",v:avg,st:false,basket:true}]}
-  return{labs:labs,cards:cardVals,stocks:stockVals,idx:idx}}
-function corr(a,b){
-  var ra=[],rb=[];for(var i=1;i<a.length;i++){if(a[i]&&a[i-1]&&b[i]&&b[i-1]){ra.push(a[i]/a[i-1]-1);rb.push(b[i]/b[i-1]-1)}}
-  var n=ra.length;if(n<6)return null;
-  var ma=ra.reduce(function(x,y){return x+y},0)/n,mb=rb.reduce(function(x,y){return x+y},0)/n,sab=0,sa=0,sb=0;
-  for(i=0;i<n;i++){sab+=(ra[i]-ma)*(rb[i]-mb);sa+=Math.pow(ra[i]-ma,2);sb+=Math.pow(rb[i]-mb,2)}
-  return sab/Math.sqrt(sa*sb)}
-function draw(){
-  var all=dates(),S=series(all),isIdx=mode==="idx",ds=[];
-  S.cards.forEach(function(s){ds.push({label:s.k,data:isIdx&&!s.basket?S.idx(s.v):s.v,borderColor:color(s.k),backgroundColor:color(s.k),yAxisID:"y",tension:.2,pointRadius:0,borderWidth:2,spanGaps:true})});
-  S.stocks.forEach(function(s){ds.push({label:s.k,data:isIdx?S.idx(s.v):s.v,borderColor:color(s.k),backgroundColor:color(s.k),borderDash:[6,4],yAxisID:isIdx?"y":"y1",tension:.2,pointRadius:0,borderWidth:2,spanGaps:true})});
-  var tc=getComputedStyle(document.body).color,gc=getComputedStyle(document.documentElement).getPropertyValue("--line");
-  var sc={x:{ticks:{color:tc,maxTicksLimit:8},grid:{color:gc}},y:{position:"left",title:{display:true,text:isIdx?"Indexed (start = 100)":"Card price (USD)",color:tc},ticks:{color:tc},grid:{color:gc}}};
-  if(!isIdx)sc.y1={position:"right",title:{display:true,text:"Stock price (USD)",color:tc},ticks:{color:tc},grid:{drawOnChartArea:false}};
-  if(chart)chart.destroy();
-  chart=new Chart($("ch"),{type:"line",data:{labels:S.labs,datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},plugins:{legend:{labels:{color:tc}}},scales:sc}});
-  var h="";
-  if(!S.cards.length||!S.stocks.length){h='<p class="note">Select at least one card and one stock to compare.</p>'}
-  else{
-    var p=S.cards[0];h="<table><tr><th>Stock</th><th>Change over range</th><th>"+esc(p.k.length>26?p.k.slice(0,24)+"…":p.k)+" change</th><th>Correlation</th></tr>";
-    var pc=chg(p.v);
-    S.stocks.forEach(function(s){var c=corr(p.v,s.v),sc2=chg(s.v);h+="<tr><td>"+esc(s.k)+"</td><td>"+fmt(sc2)+"</td><td>"+fmt(pc)+"</td><td>"+(c==null?"n/a":c.toFixed(2))+"</td></tr>"});
-    h+="</table>"}
-  $("stats").innerHTML=h}
-function chg(v){var a=null,b=null;for(var i=0;i<v.length;i++)if(v[i]!=null){if(a==null)a=v[i];b=v[i]}return a?b/a-1:null}
-function fmt(x){return x==null?"n/a":'<span class="'+(x>=0?"pos":"neg")+'">'+(x>=0?"+":"")+(x*100).toFixed(1)+"%</span>"}
-function all_(){lists();draw();banner()}
-
-$("cardList").addEventListener("change",function(e){var n=e.target.getAttribute("data-c");if(n==null)return;e.target.checked?selC.add(n):selC.delete(n);draw()});
-$("stockList").addEventListener("change",function(e){var n=e.target.getAttribute("data-s");if(n==null)return;e.target.checked?selS.add(n):selS.delete(n);draw()});
-$("q").addEventListener("input",lists);
-$("basket").addEventListener("change",draw);
-function setMode(m){mode=m;$("mIdx").setAttribute("aria-pressed",m==="idx");$("mRaw").setAttribute("aria-pressed",m==="raw");draw()}
-$("mIdx").onclick=function(){setMode("idx")};$("mRaw").onclick=function(){setMode("raw")};
-document.querySelectorAll("[data-r]").forEach(function(b){b.onclick=function(){range=+b.getAttribute("data-r");document.querySelectorAll("[data-r]").forEach(function(x){x.setAttribute("aria-pressed",x===b)});draw()}});
-function imp(id,which){$(id).addEventListener("change",function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var o=parse(r.result);if(!Object.keys(o).length){alert("No rows found. Expected columns: date,name,price");return}
-  if(which==="c"){D.cards=o;demoC=false;selC=new Set(Object.keys(o).slice(0,3))}else{D.stocks=o;demoS=false;selS=new Set(Object.keys(o).slice(0,1))}all_()};r.readAsText(f)})}
-imp("fC","c");imp("fS","s");
-$("reset").onclick=function(){D=demo();demoC=demoS=true;init()};
-function init(){selC=new Set(Object.keys(D.cards).slice(0,3));selS=new Set(["SPY"]);all_()}
-function conv(o){var c={};for(var k in o.items){var it=o.items[k];c[it.name+(it.set?" ("+it.set+")":"")]=it.s}return c}
-var ALL={};
-function pick(g){D.cards=ALL[g]||{};selC=new Set(Object.keys(D.cards).slice(0,3));all_()}
-$("game").addEventListener("change",function(){pick(this.value)});
-function J(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()})}
-J("data/index.json").then(function(ix){
-  return Promise.all(ix.games.map(function(g){return J("data/"+g.id+".json").then(function(o){ALL[g.id]=conv(o)})}))
-  .then(function(){return J("data/stocks.json").catch(function(){return null})})
-  .then(function(st){
-    D={cards:{},stocks:st?conv(st):{}};demoC=false;demoS=!st;
-    $("game").innerHTML=ix.games.map(function(g){return '<option value="'+g.id+'">'+g.label+'</option>'}).join("");
-    selS=new Set(Object.keys(D.stocks).slice(0,1));pick(ix.games[0].id)});
-}).catch(function(){$("game").style.display="none";D=demo();init()});
-})();
-</script>
+      $("cardList").addEventListener("change", function (e) { var n = e.target.getAttribute("data-c"); if (n == null) return; e.target.checked ? selC.add(n) : selC.delete(n); draw() });
+      $("stockList").addEventListener("change", function (e) { var n = e.target.getAttribute("data-s"); if (n == null) return; e.target.checked ? selS.add(n) : selS.delete(n); draw() });
+      $("q").addEventListener("input", lists);
+      $("basket").addEventListener("change", draw);
+      function setMode(m) { mode = m; $("mIdx").setAttribute("aria-pressed", m === "idx"); $("mRaw").setAttribute("aria-pressed", m === "raw"); draw() }
+      $("mIdx").onclick = function () { setMode("idx") }; $("mRaw").onclick = function () { setMode("raw") };
+      document.querySelectorAll("[data-r]").forEach(function (b) { b.onclick = function () { range = +b.getAttribute("data-r"); document.querySelectorAll("[data-r]").forEach(function (x) { x.setAttribute("aria-pressed", x === b) }); draw() } });
+      function imp(id, which) {
+        $(id).addEventListener("change", function (e) {
+          var f = e.target.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () {
+            var o = parse(r.result); if (!Object.keys(o).length) { alert("No rows found. Expected columns: date,name,price"); return }
+            if (which === "c") { D.cards = o; demoC = false; selC = new Set(Object.keys(o).slice(0, 3)) } else { D.stocks = o; demoS = false; selS = new Set(Object.keys(o).slice(0, 1)) } all_()
+          }; r.readAsText(f)
+        })
+      }
+      imp("fC", "c"); imp("fS", "s");
+      $("reset").onclick = function () { D = demo(); demoC = demoS = true; init() };
+      function init() { selC = new Set(Object.keys(D.cards).slice(0, 3)); selS = new Set(["SPY"]); all_() }
+      var IMG = {};
+      function fall(g, k) {
+        if (g === "mtg" && /^[0-9a-f-]{36}$/.test(k)) return "https://cards.scryfall.io/small/front/" + k[0] + "/" + k[1] + "/" + k + ".jpg";
+        if (g !== "mtg" && g !== "stocks" && /^\d+$/.test(k)) return "https://tcgplayer-cdn.tcgplayer.com/product/" + k + "_200w.jpg";
+        return ""
+      }
+      function conv(o, g) { var c = {}; for (var k in o.items) { var it = o.items[k], n = it.name + (it.set ? " (" + it.set + ")" : ""); c[n] = it.s; IMG[n] = it.img || fall(g, k) } return c }
+      var ALL = {};
+      function pick(g) { D.cards = ALL[g] || {}; selC = new Set(Object.keys(D.cards).slice(0, 3)); all_() }
+      $("game").addEventListener("change", function () { pick(this.value) });
+      function J(u) { return fetch(u).then(function (r) { if (!r.ok) throw 0; return r.json() }) }
+      J("data/index.json").then(function (ix) {
+        return Promise.all(ix.games.map(function (g) { return J("data/" + g.id + ".json").then(function (o) { ALL[g.id] = conv(o, g.id) }) }))
+          .then(function () { return J("data/stocks.json").catch(function () { return null }) })
+          .then(function (st) {
+            D = { cards: {}, stocks: st ? conv(st, "stocks") : {} }; demoC = false; demoS = !st;
+            $("game").innerHTML = ix.games.map(function (g) { return '<option value="' + g.id + '">' + g.label + '</option>' }).join("");
+            selS = new Set(Object.keys(D.stocks).slice(0, 1)); pick(ix.games[0].id)
+          });
+      }).catch(function () { $("game").style.display = "none"; D = demo(); init() });
+    })();
+  </script>
 </body>
+
 </html>
